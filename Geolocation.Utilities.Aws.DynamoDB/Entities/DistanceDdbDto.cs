@@ -13,5 +13,8 @@ namespace Geolocation.Utilities.Aws.DynamoDB.Entities
 
         [DynamoDBProperty]
         public double Distance { get; set; }
+
+        [DynamoDBProperty]
+        public int SearchCount { get; set; }
     }
 }

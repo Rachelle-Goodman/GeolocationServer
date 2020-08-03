@@ -15,5 +15,18 @@ namespace GelocationServer.Controllers
                 Distance = await DistanceRepository.GetDistance(source, destination),
             };
         }
-    }    
+
+        [HttpGet("popularsearch")]
+        public async Task<ActionResult<SearchDto>> GetMostPopulatSearch()
+        {
+            (string source, string destination, int hits) = await DistanceRepository.GetMostPopulatSearch();
+
+            return new SearchDto
+            {
+                Source = source,
+                Destination = destination,
+                Hits = hits,
+            };
+        }
+    }
 }

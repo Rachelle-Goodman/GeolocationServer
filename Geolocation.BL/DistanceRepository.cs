@@ -2,6 +2,8 @@
 using Geolocation.Utilities.Aws.DynamoDB.Entities;
 using Geolocation.Utilities.Google;
 using Geolocation.Utilities.Google.Entities;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -22,6 +24,7 @@ namespace Geolocation.BL
 
                 if (distance != null)
                 {
+                    UpdateSearchCountAndPopularSearch(distance);
                     return distance.Distance;
                 }
             } catch { }
@@ -53,6 +56,7 @@ namespace Geolocation.BL
                 Source = source,
                 Destination = destination,
                 Distance = MetersToKM((int)nullableDistance),
+                SearchCount = 1,
             };
 
             try
@@ -98,5 +102,61 @@ namespace Geolocation.BL
         private static async Task<PlaceDdbDto> GetPlaceFromDB(string place)
             => await DynamoDbAdapter.Get<PlaceDdbDto>(place);
 
+        private static async Task UpdateSearchCountAndPopularSearch(DistanceDdbDto distance)
+        {
+            distance.SearchCount += 1;
+
+            await Task.WhenAll(
+                UpdateSearchCountForDistance(distance),
+                UpdatePopularSearch(distance));
+        }
+
+        private static async Task UpdateSearchCountForDistance(DistanceDdbDto distance)
+        {
+            var propertiesToUpdate = new Dictionary<string, (object value, DynamoDbType type)>
+            {
+                [nameof(DistanceDdbDto.SearchCount)] = (value: distance.SearchCount, type: DynamoDbType.Number),
+            };
+
+            await DynamoDbAdapter.Update<DistanceDdbDto>(propertiesToUpdate, distance.Source, distance.Destination);
+        }
+
+        private static async Task UpdatePopularSearch(DistanceDdbDto distance)
+        {
+            var populatSearch = await GetSavedSearchFromDB(SavedSearchesNames.POPULAR_SEARCH);
+            int max = populatSearch?.SearchData?.SearchCount ?? 0;
+
+            if (distance.SearchCount > max)
+            {
+                var popularSearch = new SearchDdbDto
+                {
+                    SavedSearchName = SavedSearchesNames.POPULAR_SEARCH,
+                    SearchData = new SearchDataDdbDto
+                    {
+                        Source = distance.Source,
+                        Destination = distance.Destination,
+                        SearchCount = distance.SearchCount,
+                    }
+                };
+
+                await DynamoDbAdapter.Update(popularSearch, SavedSearchesNames.POPULAR_SEARCH);
+            }
+        }
+
+        public static async Task<(string source, string destination, int hits)> GetMostPopulatSearch()
+        {
+            SearchDdbDto popularSearchProperty = await GetSavedSearchFromDB(SavedSearchesNames.POPULAR_SEARCH);
+            var searchData = popularSearchProperty?.SearchData;
+            
+            if (searchData == null)
+            {
+                return (null, null, 0);
+            }
+
+            return (searchData.Source, searchData.Destination, searchData.SearchCount);
+        }
+
+        private static async Task<SearchDdbDto> GetSavedSearchFromDB(string searchName)
+            => await DynamoDbAdapter.Get<SearchDdbDto>(searchName);
     }
 }
