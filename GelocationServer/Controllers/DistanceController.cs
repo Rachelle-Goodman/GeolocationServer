@@ -28,5 +28,20 @@ namespace GelocationServer.Controllers
                 Hits = hits,
             };
         }
+
+        [HttpPost("distance")]
+        public async Task<ActionResult<SearchDto>> InjectDistanceAndReturnSearchData([FromBody] DistanceDetailsDto distance)
+        {
+            int hits = await DistanceRepository.InjectDistanceAndReturnHits(distance.Source, distance.Destination, distance.Distance);
+
+            var searchData = new SearchDto
+            {
+                Source = distance.Source,
+                Destination = distance.Destination,
+                Hits = hits,
+            };
+
+            return StatusCode(201, searchData);
+        }
     }
 }

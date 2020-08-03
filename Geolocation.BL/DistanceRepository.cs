@@ -2,7 +2,6 @@
 using Geolocation.Utilities.Aws.DynamoDB.Entities;
 using Geolocation.Utilities.Google;
 using Geolocation.Utilities.Google.Entities;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -20,7 +19,7 @@ namespace Geolocation.BL
 
             try
             {
-                distance = await GetDistanceFromDB(source, destination) ?? await GetDistanceFromDB(destination, source);
+                distance = await GetDistanceFromDB(source, destination);
 
                 if (distance != null)
                 {
@@ -34,7 +33,13 @@ namespace Geolocation.BL
         }
 
         private static async Task<DistanceDdbDto> GetDistanceFromDB(string source, string destination)
-            => await DynamoDbAdapter.Get<DistanceDdbDto>(source, destination);
+            => await GetOneDirectionDistanceFromDB(source, destination) ?? await GetOneDirectionDistanceFromDB(destination, source);
+
+        private static async Task<DistanceDdbDto> GetOneDirectionDistanceFromDB(string source, string destination)
+        {
+            DistanceDdbDto distanceDdbDto = await DynamoDbAdapter.Get<DistanceDdbDto>(source, destination);
+            return distanceDdbDto;
+        }
 
         private static async Task<DistanceDdbDto> GetDistanceAndSaveToDB(string source, string destination)
         {
@@ -158,5 +163,33 @@ namespace Geolocation.BL
 
         private static async Task<SearchDdbDto> GetSavedSearchFromDB(string searchName)
             => await DynamoDbAdapter.Get<SearchDdbDto>(searchName);
+
+        public static async Task<int> InjectDistanceAndReturnHits(string source, string destination, double distance)
+        {
+            DistanceDdbDto distanceDdbDto = await GetDistanceFromDB(source, destination);
+            
+            if (distanceDdbDto == null)
+            {
+                distanceDdbDto = new DistanceDdbDto
+                {
+                    Source = source,
+                    Destination = destination,
+                };
+            }
+
+            distanceDdbDto.Distance = distance;
+            UpdateDistance(distanceDdbDto);
+            return distanceDdbDto?.SearchCount ?? 0;
+        }
+
+        private static async Task UpdateDistance(DistanceDdbDto distance)
+        {
+            var propertiesToUpdate = new Dictionary<string, (object value, DynamoDbType type)>
+            {
+                [nameof(DistanceDdbDto.Distance)] = (value: distance.Distance, type: DynamoDbType.Number),
+            };
+
+            await DynamoDbAdapter.Update<DistanceDdbDto>(propertiesToUpdate, distance.Source, distance.Destination);
+        }
     }
 }

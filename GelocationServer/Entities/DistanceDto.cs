@@ -7,4 +7,13 @@ namespace GelocationServer.Entities
         [JsonProperty("distance")]
         public double Distance { get; set; }
     }
+
+    public class DistanceDetailsDto: DistanceDto
+    {
+        [JsonProperty("source")]
+        public string Source { get; set; }
+
+        [JsonProperty("destination")]
+        public string Destination { get; set; }
+    }
 }
