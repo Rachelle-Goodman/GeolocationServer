@@ -29,7 +29,7 @@ namespace Geolocation.BL
             } catch { }
 
             distance = await GetDistanceAndSaveToDB(source, destination);
-            return distance.Distance;
+            return distance?.Distance ?? -1;
         }
 
         private static async Task<DistanceDdbDto> GetDistanceFromDB(string source, string destination)
@@ -49,7 +49,7 @@ namespace Geolocation.BL
             PlaceDdbDto destPlace = await getDestPlaceTask;
             DistanceMatrixResponseDto distanceMatrix = await DistanceMatrixApi.Distance(sourcePlace.GooglePlaceId, destPlace.GooglePlaceId);
 
-            int? nullableDistance = distanceMatrix.Rows?.FirstOrDefault()?.Elements.FirstOrDefault()?.Distance.Value;            
+            int? nullableDistance = distanceMatrix?.Rows?.FirstOrDefault()?.Elements?.FirstOrDefault()?.Distance?.Value;            
 
             if (nullableDistance == null)
             {
@@ -93,12 +93,15 @@ namespace Geolocation.BL
             placeDdbDto = new PlaceDdbDto
             {
                 PlaceName = place,
-                GooglePlaceId = autocompletePlace.Predictions.ToList().First().PlaceId,
+                GooglePlaceId = autocompletePlace.Predictions.ToList().FirstOrDefault()?.PlaceId,
             };
 
             try
             {
-                DynamoDbAdapter.Insert(placeDdbDto);
+                if (placeDdbDto.GooglePlaceId != null)
+                {
+                    DynamoDbAdapter.Insert(placeDdbDto);
+                }
             } catch { }
 
             return placeDdbDto;
