@@ -1,7 +1,7 @@
 ﻿{
   "iisSettings": {
     "windowsAuthentication": false, 
-    "anonymousAuthentication": true, 
+    "anonymousAuthentication": true,
     "iisExpress": {
       "applicationUrl": "http://localhost:52002",
       "sslPort": 8080
@@ -12,7 +12,12 @@
       "commandName": "IISExpress",
       "launchBrowser": true,
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DES_DEFAULT_IV": "my default init vector",
+        "DES_DEFAULT_KEY": "my default key",
+        "ENCRYPTED_AWS_ACCESS_KEY": "Dca8oz/4HWSwCtyAKbo58HVedlwo6dBP",
+        "ENCRYPTED_AWS_SECRET_ACCESS_KEY": "ZNp7R5fRAwhAlVE8TobWQt/ssGjZ2MPWv8RoVOa1IINQlWIG3tSe55GlfzdqIA3y",
+        "ENCRYPTED_GOOGLE_API_KEY": "4NyZ81ojXHHDbcwOzwuCdUtzY7hUprrcTQUoNIfSooBLkUNNQoc+wA=="
       }
     },
     "GelocationServer": {
@@ -20,7 +25,12 @@
       "launchBrowser": true,
       "applicationUrl": "https://localhost:5001;http://localhost:5000",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DES_DEFAULT_IV": "my default init vector",
+        "DES_DEFAULT_KEY": "my default key",
+        "ENCRYPTED_AWS_ACCESS_KEY": "Dca8oz/4HWSwCtyAKbo58HVedlwo6dBP",
+        "ENCRYPTED_AWS_SECRET_ACCESS_KEY": "ZNp7R5fRAwhAlVE8TobWQt/ssGjZ2MPWv8RoVOa1IINQlWIG3tSe55GlfzdqIA3y",
+        "ENCRYPTED_GOOGLE_API_KEY": "4NyZ81ojXHHDbcwOzwuCdUtzY7hUprrcTQUoNIfSooBLkUNNQoc+wA=="
       }
     }
   }
