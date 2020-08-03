@@ -19,7 +19,8 @@ namespace Geolocation.Utilities.Aws.DynamoDB
 
             await Task.WhenAll(
                 CheckTableHealth<PlaceDdbDto>(client),
-                CheckTableHealth<DistanceDdbDto>(client));
+                CheckTableHealth<DistanceDdbDto>(client),
+                CheckTableHealth<SearchDdbDto>(client));
         }
 
         private static async Task CheckTableHealth<T>(AmazonDynamoDBClient client) where T : DynamoDbEntityBase
