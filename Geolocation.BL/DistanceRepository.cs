@@ -14,12 +14,17 @@ namespace Geolocation.BL
             source = source.ToLower();
             destination = destination.ToLower();
 
-            var distance = await GetDistanceFromDB(source, destination) ?? await GetDistanceFromDB(destination, source);
+            DistanceDdbDto distance = null;
 
-            if (distance != null)
+            try
             {
-                return distance.Distance;
-            }
+                distance = await GetDistanceFromDB(source, destination) ?? await GetDistanceFromDB(destination, source);
+
+                if (distance != null)
+                {
+                    return distance.Distance;
+                }
+            } catch { }
 
             distance = await GetDistanceAndSaveToDB(source, destination);
             return distance.Distance;
@@ -50,7 +55,11 @@ namespace Geolocation.BL
                 Distance = MetersToKM((int)nullableDistance),
             };
 
-            DynamoDbAdapter.Insert(distance);
+            try
+            {
+                DynamoDbAdapter.Insert(distance);
+            } catch { }
+
             return distance;
 
             double MetersToKM(int meters) => meters / 1000.0;
@@ -58,12 +67,17 @@ namespace Geolocation.BL
 
         private static async Task<PlaceDdbDto> GetPlaceAndSaveToDbIfNotExists(string place)
         {
-            PlaceDdbDto placeDdbDto = await GetPlaceFromDB(place);
-            
-            if (placeDdbDto != null)
+            PlaceDdbDto placeDdbDto = null;
+
+            try
             {
-                return placeDdbDto;
-            }
+                placeDdbDto = await GetPlaceFromDB(place);
+
+                if (placeDdbDto != null)
+                {
+                    return placeDdbDto;
+                }
+            } catch { }
 
             var autocompletePlace = await PlacesApi.AutoComplete(place);
 
@@ -73,7 +87,11 @@ namespace Geolocation.BL
                 GooglePlaceId = autocompletePlace.Predictions.ToList().First().PlaceId,
             };
 
-            DynamoDbAdapter.Insert(placeDdbDto);
+            try
+            {
+                DynamoDbAdapter.Insert(placeDdbDto);
+            } catch { }
+
             return placeDdbDto;
         }
 
