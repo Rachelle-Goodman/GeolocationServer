@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Geolocation.Constants
+﻿namespace Geolocation.Constants
 {
     public static class EnvironmentVariablesNames
     {

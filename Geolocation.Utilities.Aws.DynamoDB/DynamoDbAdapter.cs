@@ -1,12 +1,8 @@
-﻿using Amazon;
-using Amazon.DynamoDBv2;
+﻿using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DataModel;
 using Amazon.DynamoDBv2.DocumentModel;
 using Amazon.DynamoDBv2.Model;
-using Geolocation.Constants;
 using Geolocation.Utilities.Aws.DynamoDB.Entities;
-using Geolocation.Utilities.Encryption;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -20,11 +16,7 @@ namespace Geolocation.Utilities.Aws.DynamoDB
 
         static DynamoDbAdapter()
         {
-            var awsAccessKey = DesEncryptor.DecryptData(Environment.GetEnvironmentVariable(EnvironmentVariablesNames.ENCRYPTED_AWS_ACCESS_KEY));
-            var awsSecretAccessKey = DesEncryptor.DecryptData(Environment.GetEnvironmentVariable(EnvironmentVariablesNames.ENCRYPTED_AWS_SECRET_ACCESS_KEY));
-
-            _client = new AmazonDynamoDBClient(awsAccessKey, awsSecretAccessKey, RegionEndpoint.USEast1);
-            _context = new DynamoDBContext(_client);
+            (_client, _context) = DynamoDbUtil.BuildDynamoDbAccessObjects();
         }
 
         public static async Task Insert<T>(T item) where T : DynamoDbEntityBase

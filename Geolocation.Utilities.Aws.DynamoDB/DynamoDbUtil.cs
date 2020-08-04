@@ -1,6 +1,10 @@
-﻿using Amazon.DynamoDBv2.DataModel;
+﻿using Amazon;
+using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.DataModel;
 using Amazon.DynamoDBv2.Model;
+using Geolocation.Constants;
 using Geolocation.Utilities.Aws.DynamoDB.Entities;
+using Geolocation.Utilities.Encryption;
 using System;
 using System.Collections.Generic;
 
@@ -8,6 +12,17 @@ namespace Geolocation.Utilities.Aws.DynamoDB
 {
     internal static class DynamoDbUtil
     {
+        internal static (AmazonDynamoDBClient client, DynamoDBContext context) BuildDynamoDbAccessObjects()
+        {
+            var awsAccessKey = DesEncryptor.DecryptData(Environment.GetEnvironmentVariable(EnvironmentVariablesNames.ENCRYPTED_AWS_ACCESS_KEY));
+            var awsSecretAccessKey = DesEncryptor.DecryptData(Environment.GetEnvironmentVariable(EnvironmentVariablesNames.ENCRYPTED_AWS_SECRET_ACCESS_KEY));
+
+            var client = new AmazonDynamoDBClient(awsAccessKey, awsSecretAccessKey, RegionEndpoint.USEast1);
+            var context = new DynamoDBContext(client);
+
+            return (client, context);
+        }
+
         internal static Dictionary<string, AttributeValue> GetKey<T>(object hashKey, object rangeKey) where T: DynamoDbEntityBase
         {
             var hashKeyName = GetHashKeyName<T>();
