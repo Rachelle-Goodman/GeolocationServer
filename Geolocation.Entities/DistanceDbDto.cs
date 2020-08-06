@@ -1,9 +1,9 @@
 ﻿using Amazon.DynamoDBv2.DataModel;
 
-namespace Geolocation.Utilities.Aws.DynamoDB.Entities
+namespace Geolocation.Entities
 {
     [DynamoDBTable("Distances")]
-    public class DistanceDdbDto: DynamoDbEntityBase
+    public class DistanceDbDto: DynamoDbEntityBase
     {
         [DynamoDBHashKey]
         public string Source { get; set; }

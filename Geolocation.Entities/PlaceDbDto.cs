@@ -1,9 +1,9 @@
 ﻿using Amazon.DynamoDBv2.DataModel;
 
-namespace Geolocation.Utilities.Aws.DynamoDB.Entities
+namespace Geolocation.Entities
 {
     [DynamoDBTable("Places")]
-    public class PlaceDdbDto: DynamoDbEntityBase
+    public class PlaceDbDto: DynamoDbEntityBase
     {
         [DynamoDBHashKey]
         public string PlaceName { get; set; }

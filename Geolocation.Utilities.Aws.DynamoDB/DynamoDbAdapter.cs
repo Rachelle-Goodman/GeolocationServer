@@ -2,47 +2,54 @@
 using Amazon.DynamoDBv2.DataModel;
 using Amazon.DynamoDBv2.DocumentModel;
 using Amazon.DynamoDBv2.Model;
-using Geolocation.Utilities.Aws.DynamoDB.Entities;
+using Geoloocation.DB;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace Geolocation.Utilities.Aws.DynamoDB
 {
-    public static class DynamoDbAdapter
+    public class DynamoDbAdapter: IDB
     {
         private static readonly AmazonDynamoDBClient _client;
         private static readonly DynamoDBContext _context;
+        private static Lazy<DynamoDbAdapter> _lazy;
+
+        private DynamoDbAdapter() { }
 
         static DynamoDbAdapter()
         {
             (_client, _context) = DynamoDbUtil.BuildDynamoDbAccessObjects();
+            _lazy = new Lazy<DynamoDbAdapter>(() => new DynamoDbAdapter());
         }
 
-        public static async Task Insert<T>(T item) where T : DynamoDbEntityBase
+        public static IDB Instance => _lazy.Value;
+
+        public async Task Insert<TEntity>(TEntity item) where TEntity: DbEntityBase
         {
             var request = BuildPutItemRequest(item);
             await _client.PutItemAsync(request);
         }
 
-        public static async Task Update<T>(T item, object hashKey, object rangeKey = null) where T : DynamoDbEntityBase
+        public async Task Update<TEntity>(TEntity item, object hashKey, object rangeKey = null) where TEntity: DbEntityBase
         {
             var request = BuildUpdateItemRequest(item, hashKey, rangeKey);
             await _client.UpdateItemAsync(request);
         }
 
-        private static PutItemRequest BuildPutItemRequest<T>(T item) where T : DynamoDbEntityBase
+        private PutItemRequest BuildPutItemRequest<TEntity>(TEntity item) where TEntity: DbEntityBase
         {
             return new PutItemRequest
             {
-                TableName = DynamoDbUtil.GetTableName<T>(),
-                Item = DynamoDbUtil.ToAttributeValue(_context, item, DynamoDbType.Map).M,
+                TableName = DynamoDbUtil.GetTableName<TEntity>(),
+                Item = DynamoDbUtil.ToAttributeValue(_context, item, DbType.Map).M,
             };
         }
 
-        private static UpdateItemRequest BuildUpdateItemRequest<T>(T item, object hashKey, object rangeKey) where T : DynamoDbEntityBase
+        private UpdateItemRequest BuildUpdateItemRequest<TEntity>(TEntity item, object hashKey, object rangeKey) where TEntity: DbEntityBase
         {
-            var hashKeyName = DynamoDbUtil.GetHashKeyName<T>();
+            var hashKeyName = DynamoDbUtil.GetHashKeyName<TEntity>();
             var updateExpression = "SET ";
             var expressionAttributeNames = new Dictionary<string, string>();
             var expressionAttributeValues = new Dictionary<string, AttributeValue>();
@@ -72,18 +79,18 @@ namespace Geolocation.Utilities.Aws.DynamoDB
                 ExpressionAttributeNames = expressionAttributeNames,
                 ExpressionAttributeValues = expressionAttributeValues,
                 UpdateExpression = updateExpression,
-                TableName = DynamoDbUtil.GetTableName<T>(),
-                Key = DynamoDbUtil.GetKey<T>(hashKey, rangeKey),
+                TableName = DynamoDbUtil.GetTableName<TEntity>(),
+                Key = DynamoDbUtil.GetKey<TEntity>(hashKey, rangeKey),
             };
             return request;
         }
 
-        public static async Task Update<T>(Dictionary<string, (object value, DynamoDbType type)> attributesToUpdate, object hashKey, object rangeKey = null) where T : DynamoDbEntityBase
+        public async Task Update<TEntity>(Dictionary<string, (object value, DbType type)> attributesToUpdate, object hashKey, object rangeKey = null) where TEntity: DbEntityBase
         {
             var request = new UpdateItemRequest
             {
-                TableName = DynamoDbUtil.GetTableName<T>(),
-                Key = DynamoDbUtil.GetKey<T>(hashKey, rangeKey),
+                TableName = DynamoDbUtil.GetTableName<TEntity>(),
+                Key = DynamoDbUtil.GetKey<TEntity>(hashKey, rangeKey),
                 AttributeUpdates = attributesToUpdate.ToDictionary(
                     x => x.Key,
                     x => new AttributeValueUpdate(
@@ -94,38 +101,38 @@ namespace Geolocation.Utilities.Aws.DynamoDB
             await _client.UpdateItemAsync(request);
         }
 
-        public static async Task UpdateList<T, U>(string attributeName, List<U> list, object hashKey, object rangeKey = null) where T : DynamoDbEntityBase
+        public async Task UpdateList<TEntity, TObject>(string attributeName, List<TObject> list, object hashKey, object rangeKey = null) where TEntity: DbEntityBase
         {
             var request = new UpdateItemRequest
             {
-                TableName = DynamoDbUtil.GetTableName<T>(),
-                Key = DynamoDbUtil.GetKey<T>(hashKey, rangeKey),
+                TableName = DynamoDbUtil.GetTableName<TEntity>(),
+                Key = DynamoDbUtil.GetKey<TEntity>(hashKey, rangeKey),
                 AttributeUpdates = new Dictionary<string, AttributeValueUpdate>
                 {
-                    [attributeName] = new AttributeValueUpdate(DynamoDbUtil.ToAttributeValue(_context, list, DynamoDbType.List), AttributeAction.PUT),
+                    [attributeName] = new AttributeValueUpdate(DynamoDbUtil.ToAttributeValue(_context, list, DbType.List), AttributeAction.PUT),
                 },
             };
 
             await _client.UpdateItemAsync(request);
         }
 
-        public static async Task Remove<T>(object hashKey, object rangeKey = null) where T : DynamoDbEntityBase
+        public async Task Remove<TEntity>(object hashKey, object rangeKey = null) where TEntity: DbEntityBase
         {
             var request = new DeleteItemRequest
             {
-                TableName = DynamoDbUtil.GetTableName<T>(),
-                Key = DynamoDbUtil.GetKey<T>(hashKey, rangeKey),
+                TableName = DynamoDbUtil.GetTableName<TEntity>(),
+                Key = DynamoDbUtil.GetKey<TEntity>(hashKey, rangeKey),
             };
 
             await _client.DeleteItemAsync(request);
         }
 
-        public static async Task<T> Get<T>(object hashKey, object rangeKey = null, List<string> attributesToGet = null) where T : DynamoDbEntityBase
+        public async Task<TEntity> Get<TEntity>(object hashKey, object rangeKey = null, List<string> attributesToGet = null) where TEntity: DbEntityBase
         {
             var request = new GetItemRequest
             {
-                TableName = DynamoDbUtil.GetTableName<T>(),
-                Key = DynamoDbUtil.GetKey<T>(hashKey, rangeKey),
+                TableName = DynamoDbUtil.GetTableName<TEntity>(),
+                Key = DynamoDbUtil.GetKey<TEntity>(hashKey, rangeKey),
                 AttributesToGet = null,
             };
 
@@ -133,30 +140,30 @@ namespace Geolocation.Utilities.Aws.DynamoDB
 
             if (response.Item.Count == 0)
             {
-                return null;
+                return default;
             }
 
-            return _context.FromDocument<T>(Document.FromAttributeMap(response.Item));
+            return _context.FromDocument<TEntity>(Document.FromAttributeMap(response.Item));
         }
 
-        public static async Task<IEnumerable<T>> GetAll<T>(params ScanCondition[] conditions) where T : DynamoDbEntityBase
+        public async Task<IEnumerable<TEntity>> GetAll<TEntity>(params ScanCondition[] conditions) where TEntity: DbEntityBase
         {
-            return await _context.ScanAsync<T>(conditions).GetRemainingAsync();
+            return await _context.ScanAsync<TEntity>(conditions).GetRemainingAsync();
         }
 
-        public static async Task AddToList<T, U>(T item, DynamoDbType itemType, string attributeName, object hashKey, object rangeKey = null) where U : DynamoDbEntityBase
+        public async Task AddToList<TEntity, TObject>(TObject item, DbType itemType, string attributeName, object hashKey, object rangeKey = null) where TEntity : DbEntityBase
         {
             const string itemName = ":item";
             const string emptyListName = ":emptyList";
 
             var request = new UpdateItemRequest
             {
-                TableName = DynamoDbUtil.GetTableName<U>(),
-                Key = DynamoDbUtil.GetKey<U>(hashKey, rangeKey),
+                TableName = DynamoDbUtil.GetTableName<TEntity>(),
+                Key = DynamoDbUtil.GetKey<TEntity>(hashKey, rangeKey),
                 UpdateExpression = $"SET {attributeName} = list_append(if_not_exists({attributeName}, {emptyListName}), {itemName})",
                 ExpressionAttributeValues = new Dictionary<string, AttributeValue>
                 {
-                    [itemName] = DynamoDbUtil.ToAttributeValue(_context, new List<T> { item }, DynamoDbType.List),
+                    [itemName] = DynamoDbUtil.ToAttributeValue(_context, new List<TObject> { item }, DbType.List),
                     [emptyListName] = new AttributeValue { IsLSet = true },
                 },
                 ReturnValues = "UPDATED_NEW"

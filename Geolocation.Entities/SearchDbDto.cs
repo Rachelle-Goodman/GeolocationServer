@@ -1,18 +1,18 @@
 ﻿using Amazon.DynamoDBv2.DataModel;
 
-namespace Geolocation.Utilities.Aws.DynamoDB.Entities
+namespace Geolocation.Entities
 {
     [DynamoDBTable("SavedSearches")]
-    public class SearchDdbDto: DynamoDbEntityBase
+    public class SearchDbDto: DynamoDbEntityBase
     {
         [DynamoDBHashKey]
         public string SavedSearchName { get; set; }
 
         [DynamoDBProperty]
-        public SearchDataDdbDto SearchData { get; set; }
+        public SearchDataDbDto SearchData { get; set; }
     }
 
-    public class SearchDataDdbDto
+    public class SearchDataDbDto
     {
         [DynamoDBProperty]
         public string Source { get; set; }

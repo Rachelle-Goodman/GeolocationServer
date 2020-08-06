@@ -5,8 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Geolocation.Entities\Geolocation.Entities.csproj" />
-    <ProjectReference Include="..\Geolocation.Utilities.Encryption\Geolocation.Utilities.Encryption.csproj" />
+    <ProjectReference Include="..\Geolocation.Utilities.Aws.DynamoDB\Geolocation.Utilities.Aws.DynamoDB.csproj" />
     <ProjectReference Include="..\Geoloocation.DB\Geoloocation.DB.csproj" />
   </ItemGroup>
 

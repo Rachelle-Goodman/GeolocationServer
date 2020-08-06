@@ -1,4 +1,4 @@
-﻿namespace Geolocation.Utilities.Aws.DynamoDB
+﻿namespace Geolocation.Entities
 {
     public static class SavedSearchesNames
     {

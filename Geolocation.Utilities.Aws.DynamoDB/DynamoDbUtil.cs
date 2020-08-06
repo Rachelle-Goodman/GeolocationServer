@@ -3,8 +3,8 @@ using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DataModel;
 using Amazon.DynamoDBv2.Model;
 using Geolocation.Constants;
-using Geolocation.Utilities.Aws.DynamoDB.Entities;
 using Geolocation.Utilities.Encryption;
+using Geoloocation.DB;
 using System;
 using System.Collections.Generic;
 
@@ -23,9 +23,9 @@ namespace Geolocation.Utilities.Aws.DynamoDB
             return (client, context);
         }
 
-        internal static Dictionary<string, AttributeValue> GetKey<T>(object hashKey, object rangeKey) where T: DynamoDbEntityBase
+        internal static Dictionary<string, AttributeValue> GetKey<TEntity>(object hashKey, object rangeKey) where TEntity: DbEntityBase
         {
-            var hashKeyName = GetHashKeyName<T>();
+            var hashKeyName = GetHashKeyName<TEntity>();
             var keys = new Dictionary<string, AttributeValue>
             {
                 [hashKeyName] = KeyToAttributeValue(hashKey),
@@ -33,7 +33,7 @@ namespace Geolocation.Utilities.Aws.DynamoDB
 
             if (rangeKey != null)
             {
-                var rangeKeyName = GetRangeKeyName<T>();
+                var rangeKeyName = GetRangeKeyName<TEntity>();
                 keys[rangeKeyName] = KeyToAttributeValue(rangeKey);
             }
 
@@ -43,23 +43,23 @@ namespace Geolocation.Utilities.Aws.DynamoDB
         private static AttributeValue KeyToAttributeValue(object key)
             => key is string ? new AttributeValue { S = key.ToString() } : new AttributeValue { N = key.ToString() };
 
-        internal static string GetTableName<T>() where T : DynamoDbEntityBase
+        internal static string GetTableName<TEntity>() where TEntity: DbEntityBase
         {
-            var type = typeof(T);
+            var type = typeof(TEntity);
             AddTypeToDdbTypeToMetadataIfNotExists(type);
             return _ddbTypeToMetadata[type].tableName;
         }
 
-        internal static string GetHashKeyName<T>() where T : DynamoDbEntityBase
+        internal static string GetHashKeyName<TEntity>() where TEntity: DbEntityBase
         {
-            var type = typeof(T);
+            var type = typeof(TEntity);
             AddTypeToDdbTypeToMetadataIfNotExists(type);
             return _ddbTypeToMetadata[type].hashKeyName;
         }
 
-        internal static string GetRangeKeyName<T>() where T : DynamoDbEntityBase
+        internal static string GetRangeKeyName<TEntity>() where TEntity: DbEntityBase
         {
-            var type = typeof(T);
+            var type = typeof(TEntity);
             AddTypeToDdbTypeToMetadataIfNotExists(type);
             return _ddbTypeToMetadata[type].rangeKeyName;
         }
@@ -106,62 +106,50 @@ namespace Geolocation.Utilities.Aws.DynamoDB
         private static string FindTableNameOfType(Type type)
             => (type.GetCustomAttributes(typeof(DynamoDBTableAttribute), true)[0] as DynamoDBTableAttribute).TableName;
 
-        internal static AttributeValue ToAttributeValue<T>(DynamoDBContext context, T item, DynamoDbType type)
+        internal static AttributeValue ToAttributeValue<TEntity>(DynamoDBContext context, TEntity item, DbType type)
         {
             switch (type)
             {
-                case DynamoDbType.Bool:
+                case DbType.Bool:
                     return new AttributeValue { BOOL = Convert.ToBoolean(item) };
 
-                case DynamoDbType.Number:
+                case DbType.Number:
                     return new AttributeValue { N = item.ToString() };
 
-                case DynamoDbType.String:
+                case DbType.String:
                     return new AttributeValue { S = item.ToString() };
 
-                case DynamoDbType.Enum:
+                case DbType.Enum:
                     return new AttributeValue { N = item.ToString() };
 
-                case DynamoDbType.DateTime:
+                case DbType.DateTime:
                     return new AttributeValue { S = item.ToString() };
 
-                case DynamoDbType.Null:
+                case DbType.Null:
                     return new AttributeValue { NULL = true };
 
-                case DynamoDbType.Map:
+                case DbType.Map:
                     return new AttributeValue { M = context.ToDocument(item).ToAttributeMap() };
 
-                case DynamoDbType.List:
-                    return new AttributeValue { L = context.ToDocument(new AttributeValueConverterHelper<T>(item)).ToAttributeMap()[nameof(AttributeValueConverterHelper<T>.List)].L };
+                case DbType.List:
+                    return new AttributeValue { L = context.ToDocument(new AttributeValueConverterHelper<TEntity>(item)).ToAttributeMap()[nameof(AttributeValueConverterHelper<TEntity>.List)].L };
 
                 default:
                     throw new ArgumentOutOfRangeException();
             }
         }
 
-        private class AttributeValueConverterHelper<T>
+        private class AttributeValueConverterHelper<TEntity>
         {
             public AttributeValueConverterHelper() { } // ctor needed for dynamodb sdk
 
-            public AttributeValueConverterHelper(T list)
+            public AttributeValueConverterHelper(TEntity list)
             {
                 List = list;
             }
 
             [DynamoDBProperty]
-            public T List { get; set; }
+            public TEntity List { get; set; }
         }
-    }
-
-    public enum DynamoDbType
-    {
-        Bool,
-        Number,
-        String,
-        Enum,
-        DateTime,
-        Null,
-        List,
-        Map,
     }
 }

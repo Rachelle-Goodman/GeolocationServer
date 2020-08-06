@@ -1,15 +1,29 @@
 ﻿using Amazon.DynamoDBv2;
-using Geolocation.Utilities.Aws.DynamoDB.Entities;
+using Geolocation.Entities;
+using Geoloocation.DB;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace Geolocation.Utilities.Aws.DynamoDB
 {
-    public static class DynamoDbHealthTester
+    public class DynamoDbHealthTester: IDbHealthTester
     {
-        public static async Task HealthCheck()
+        private static Lazy<DynamoDbHealthTester> _lazy;
+
+        static DynamoDbHealthTester()
+        {
+            _lazy = new Lazy<DynamoDbHealthTester>(() => new DynamoDbHealthTester());
+        }
+
+        private DynamoDbHealthTester() { }
+
+        public static IDbHealthTester Instance => _lazy.Value;
+
+
+        public async Task HealthCheck()
         {
             (AmazonDynamoDBClient client, _) = DynamoDbUtil.BuildDynamoDbAccessObjects();
             List<Type> dynamoDbEntities = GetDynamoDbEntities();
@@ -22,7 +36,7 @@ namespace Geolocation.Utilities.Aws.DynamoDB
 
             foreach (var type in dynamoDbEntities)
             {
-                var method = typeof(DynamoDbHealthTester).GetMethod(nameof(DynamoDbHealthTester.CheckTableHealth));
+                var method = typeof(DynamoDbHealthTester).GetMethod(nameof(DynamoDbHealthTester.CheckTableHealth), BindingFlags.Static | BindingFlags.NonPublic);
                 object checkTableHealthTask = method.MakeGenericMethod(type).Invoke(obj: null, parameters: new object[] { client });
                 checkTablesHealthTasks.Add((Task)checkTableHealthTask);
             }
@@ -30,22 +44,10 @@ namespace Geolocation.Utilities.Aws.DynamoDB
             await Task.WhenAll(checkTablesHealthTasks);
         }
 
-        private static List<Type> GetDynamoDbEntities()
-        {
-            var dynamoDbEntities = new List<Type>();
+        private static List<Type> GetDynamoDbEntities() =>
+            Assembly.GetAssembly(typeof(DynamoDbEntityBase)).GetTypes().Where(type => type.IsSubclassOf(typeof(DynamoDbEntityBase))).ToList();
 
-            foreach (var domain_assembly in AppDomain.CurrentDomain.GetAssemblies())
-            {
-                var assembly_types = domain_assembly.GetTypes()
-                  .Where(type => type.IsSubclassOf(typeof(DynamoDbEntityBase)) && !type.IsAbstract);
-
-                dynamoDbEntities.AddRange(assembly_types);
-            }
-
-            return dynamoDbEntities;
-        }
-
-        public static async Task CheckTableHealth<T>(AmazonDynamoDBClient client) where T : DynamoDbEntityBase
-            => await client.DescribeTableAsync(DynamoDbUtil.GetTableName<T>());
+        private static async Task CheckTableHealth<TEntity>(AmazonDynamoDBClient client) where TEntity: DynamoDbEntityBase
+            => await client.DescribeTableAsync(DynamoDbUtil.GetTableName<TEntity>());
     }
 }
