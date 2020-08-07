@@ -97,7 +97,7 @@ namespace Geolocation.BL
 
             try
             {
-                placeDbDto = await GetPlaceFromDB(place);
+                placeDbDto = await PlaceDbCache.GetPlace(place);
 
                 if (placeDbDto != null)
                 {
@@ -117,15 +117,12 @@ namespace Geolocation.BL
             {
                 if (placeDbDto.GooglePlaceId != null)
                 {
-                    _db.Insert(placeDbDto);
+                    PlaceDbCache.InsertPlace(placeDbDto);
                 }
             } catch { }
 
             return placeDbDto;
-        }
-
-        private static async Task<PlaceDbDto> GetPlaceFromDB(string place)
-            => await _db.Get<PlaceDbDto>(place);
+        }        
 
         private static async Task UpdateSearchCountAndPopularSearch(DistanceDbDto distance)
         {
