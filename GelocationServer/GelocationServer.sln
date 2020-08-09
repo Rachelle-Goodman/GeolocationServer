@@ -15,11 +15,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Geolocation.Constants", "..
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Geolocation.Utilities.Google", "..\Geolocation.Utilities.Google\Geolocation.Utilities.Google.csproj", "{4441D7B4-A22A-447B-9CA8-342988732A16}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Geoloocation.DB", "..\Geoloocation.DB\Geoloocation.DB.csproj", "{347D6B56-A0AD-449C-B026-59418701491F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Geoloocation.DB", "..\Geoloocation.DB\Geoloocation.DB.csproj", "{347D6B56-A0AD-449C-B026-59418701491F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Geolocation.Factory", "..\Geolocation.Factory\Geolocation.Factory.csproj", "{F5E99DB5-B5BD-456F-80FD-E0A8D1173070}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Geolocation.Entities", "..\Geolocation.Entities\Geolocation.Entities.csproj", "{212ED562-830E-4652-933E-2522576C7B34}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Geolocation.Entities", "..\Geolocation.Entities\Geolocation.Entities.csproj", "{212ED562-830E-4652-933E-2522576C7B34}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Geolocation.DependencyInjection", "..\Geolocation.DependencyInjection\Geolocation.DependencyInjection.csproj", "{4E0C5A4F-AA99-4F4A-A05D-49DB9BCDE7CC}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Geolocation.Factory", "..\Geolocation.Factory\Geolocation.Factory.csproj", "{2E1C8C0B-B6B4-4562-917C-489E236ECED3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -55,14 +57,18 @@ Global
 		{347D6B56-A0AD-449C-B026-59418701491F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{347D6B56-A0AD-449C-B026-59418701491F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{347D6B56-A0AD-449C-B026-59418701491F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F5E99DB5-B5BD-456F-80FD-E0A8D1173070}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F5E99DB5-B5BD-456F-80FD-E0A8D1173070}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F5E99DB5-B5BD-456F-80FD-E0A8D1173070}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F5E99DB5-B5BD-456F-80FD-E0A8D1173070}.Release|Any CPU.Build.0 = Release|Any CPU
 		{212ED562-830E-4652-933E-2522576C7B34}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{212ED562-830E-4652-933E-2522576C7B34}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{212ED562-830E-4652-933E-2522576C7B34}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{212ED562-830E-4652-933E-2522576C7B34}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4E0C5A4F-AA99-4F4A-A05D-49DB9BCDE7CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4E0C5A4F-AA99-4F4A-A05D-49DB9BCDE7CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4E0C5A4F-AA99-4F4A-A05D-49DB9BCDE7CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4E0C5A4F-AA99-4F4A-A05D-49DB9BCDE7CC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2E1C8C0B-B6B4-4562-917C-489E236ECED3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2E1C8C0B-B6B4-4562-917C-489E236ECED3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2E1C8C0B-B6B4-4562-917C-489E236ECED3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2E1C8C0B-B6B4-4562-917C-489E236ECED3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

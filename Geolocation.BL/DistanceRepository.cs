@@ -1,5 +1,5 @@
-﻿using Geolocation.Entities;
-using Geolocation.Factory;
+﻿using Geolocation.DependencyInjection;
+using Geolocation.Entities;
 using Geolocation.Utilities.Google;
 using Geolocation.Utilities.Google.Entities;
 using Geoloocation.DB;
@@ -9,16 +9,26 @@ using System.Threading.Tasks;
 
 namespace Geolocation.BL
 {
-    public static class DistanceRepository
+    public interface IDistanceRepository
+    {
+        Task<double> GetDistance(string source, string destination);
+        Task<int> InjectDistanceAndReturnHits(string source, string destination, double distance);
+        Task<(string source, string destination, int hits)> GetMostPopulatSearch();
+    }
+
+    [DependencyInjection(DependencyInjectionType.Singleton)]
+    internal class DistanceRepository: IDistanceRepository
     {
         private static IDB _db;
+        private static IPlaceDbCache _placeDbCache;
 
-        static DistanceRepository()
+        public DistanceRepository(IDB db, IPlaceDbCache placeDbCache)
         {
-            _db = DbFactory.DB;
+            _db = db;
+            _placeDbCache = placeDbCache;
         }
 
-        public static async Task<double> GetDistance(string source, string destination)
+        public async Task<double> GetDistance(string source, string destination)
         {
             source = source.ToLower();
             destination = destination.ToLower();
@@ -97,7 +107,7 @@ namespace Geolocation.BL
 
             try
             {
-                placeDbDto = await PlaceDbCache.GetPlace(place);
+                placeDbDto = await _placeDbCache.GetPlace(place);
 
                 if (placeDbDto != null)
                 {
@@ -117,7 +127,7 @@ namespace Geolocation.BL
             {
                 if (placeDbDto.GooglePlaceId != null)
                 {
-                    PlaceDbCache.InsertPlace(placeDbDto);
+                    _placeDbCache.InsertPlace(placeDbDto);
                 }
             } catch { }
 
@@ -165,7 +175,7 @@ namespace Geolocation.BL
             }
         }
 
-        public static async Task<(string source, string destination, int hits)> GetMostPopulatSearch()
+        public async Task<(string source, string destination, int hits)> GetMostPopulatSearch()
         {
             SearchDbDto popularSearchProperty = await GetSavedSearchFromDB(SavedSearchesNames.POPULAR_SEARCH);
             var searchData = popularSearchProperty?.SearchData;
@@ -181,7 +191,7 @@ namespace Geolocation.BL
         private static async Task<SearchDbDto> GetSavedSearchFromDB(string searchName)
             => await _db.Get<SearchDbDto>(searchName);
 
-        public static async Task<int> InjectDistanceAndReturnHits(string source, string destination, double distance)
+        public async Task<int> InjectDistanceAndReturnHits(string source, string destination, double distance)
         {
             DistanceDbDto DistanceDbDto = await GetDistanceFromDB(source, destination);
             

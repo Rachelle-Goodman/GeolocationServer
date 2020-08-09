@@ -1,4 +1,5 @@
 ﻿using Amazon.DynamoDBv2;
+using Geolocation.DependencyInjection;
 using Geolocation.Entities;
 using Geoloocation.DB;
 using System;
@@ -9,20 +10,9 @@ using System.Threading.Tasks;
 
 namespace Geolocation.Utilities.Aws.DynamoDB
 {
+    [DependencyInjection(DependencyInjectionType.Singleton)]
     public class DynamoDbHealthTester: IDbHealthTester
     {
-        private static Lazy<DynamoDbHealthTester> _lazy;
-
-        static DynamoDbHealthTester()
-        {
-            _lazy = new Lazy<DynamoDbHealthTester>(() => new DynamoDbHealthTester());
-        }
-
-        private DynamoDbHealthTester() { }
-
-        public static IDbHealthTester Instance => _lazy.Value;
-
-
         public async Task HealthCheck()
         {
             (AmazonDynamoDBClient client, _) = DynamoDbUtil.BuildDynamoDbAccessObjects();

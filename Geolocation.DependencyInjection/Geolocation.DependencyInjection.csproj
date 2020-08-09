@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Geolocation.Utilities.Aws.DynamoDB\Geolocation.Utilities.Aws.DynamoDB.csproj" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.1.6" />
   </ItemGroup>
 
 </Project>

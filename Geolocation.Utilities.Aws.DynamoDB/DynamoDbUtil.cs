@@ -12,8 +12,12 @@ namespace Geolocation.Utilities.Aws.DynamoDB
 {
     internal static class DynamoDbUtil
     {
+        private static Dictionary<Type, (string tableName, string hashKeyName, string rangeKeyName)> _ddbTypeToMetadata;
+
         internal static (AmazonDynamoDBClient client, DynamoDBContext context) BuildDynamoDbAccessObjects()
         {
+            _ddbTypeToMetadata = new Dictionary<Type, (string tableName, string hashKeyName, string rangeKeyName)>();
+
             var awsAccessKey = DesEncryptor.DecryptData(Environment.GetEnvironmentVariable(EnvironmentVariablesNames.ENCRYPTED_AWS_ACCESS_KEY));
             var awsSecretAccessKey = DesEncryptor.DecryptData(Environment.GetEnvironmentVariable(EnvironmentVariablesNames.ENCRYPTED_AWS_SECRET_ACCESS_KEY));
 
@@ -71,8 +75,6 @@ namespace Geolocation.Utilities.Aws.DynamoDB
                 AddKeyToDdbTypeToMetadataDict(type);
             }
         }
-
-        private static Dictionary<Type, (string tableName, string hashKeyName, string rangeKeyName)> _ddbTypeToMetadata = new Dictionary<Type, (string tableName, string hashKeyName, string rangeKeyName)>();
 
         private static void AddKeyToDdbTypeToMetadataDict(Type type)
         {

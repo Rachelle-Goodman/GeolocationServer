@@ -2,29 +2,24 @@
 using Amazon.DynamoDBv2.DataModel;
 using Amazon.DynamoDBv2.DocumentModel;
 using Amazon.DynamoDBv2.Model;
+using Geolocation.DependencyInjection;
 using Geoloocation.DB;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace Geolocation.Utilities.Aws.DynamoDB
 {
+    [DependencyInjection(DependencyInjectionType.Singleton)]
     public class DynamoDbAdapter: IDB
     {
         private static readonly AmazonDynamoDBClient _client;
         private static readonly DynamoDBContext _context;
-        private static Lazy<DynamoDbAdapter> _lazy;
-
-        private DynamoDbAdapter() { }
 
         static DynamoDbAdapter()
         {
             (_client, _context) = DynamoDbUtil.BuildDynamoDbAccessObjects();
-            _lazy = new Lazy<DynamoDbAdapter>(() => new DynamoDbAdapter());
         }
-
-        public static IDB Instance => _lazy.Value;
 
         public async Task Insert<TEntity>(TEntity item) where TEntity: DbEntityBase
         {
@@ -151,7 +146,7 @@ namespace Geolocation.Utilities.Aws.DynamoDB
             return await _context.ScanAsync<TEntity>(conditions).GetRemainingAsync();
         }
 
-        public async Task AddToList<TEntity, TObject>(TObject item, DbType itemType, string attributeName, object hashKey, object rangeKey = null) where TEntity : DbEntityBase
+        public async Task AddToList<TEntity, TObject>(TObject item, string attributeName, object hashKey, object rangeKey = null) where TEntity : DbEntityBase
         {
             const string itemName = ":item";
             const string emptyListName = ":emptyList";

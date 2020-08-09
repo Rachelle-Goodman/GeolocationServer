@@ -7,19 +7,27 @@ namespace GelocationServer.Controllers
 {
     public class DistanceController: Controller
     {
+        private static IDistanceRepository _distanceRepository;
+
+        public DistanceController(IDistanceRepository distanceRepository)
+        {
+            _distanceRepository = distanceRepository;
+        }
+
+
         [HttpGet("distance")]
         public async Task<ActionResult<DistanceDto>> GetDistance([FromQuery] string source, [FromQuery] string destination)
         {
             return new DistanceDto
             {
-                Distance = await DistanceRepository.GetDistance(source, destination),
+                Distance = await _distanceRepository.GetDistance(source, destination),
             };
         }
 
         [HttpGet("popularsearch")]
-        public async Task<ActionResult<SearchDto>> GetMostPopulatSearch()
+        public async Task<ActionResult<SearchDto>> GetMostPopularSearch()
         {
-            (string source, string destination, int hits) = await DistanceRepository.GetMostPopulatSearch();
+            (string source, string destination, int hits) = await _distanceRepository.GetMostPopulatSearch();
 
             return new SearchDto
             {
@@ -32,7 +40,7 @@ namespace GelocationServer.Controllers
         [HttpPost("distance")]
         public async Task<ActionResult<SearchDto>> InjectDistanceAndReturnSearchData([FromBody] DistanceDetailsDto distance)
         {
-            int hits = await DistanceRepository.InjectDistanceAndReturnHits(distance.Source, distance.Destination, distance.Distance);
+            int hits = await _distanceRepository.InjectDistanceAndReturnHits(distance.Source, distance.Destination, distance.Distance);
 
             var searchData = new SearchDto
             {

@@ -1,29 +1,40 @@
-﻿using Geolocation.Entities;
-using Geolocation.Factory;
+﻿using Geolocation.DependencyInjection;
+using Geolocation.Entities;
 using Geoloocation.DB;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Geolocation.BL
 {
-    internal static class PlaceDbCache
+    internal interface IPlaceDbCache
+    {
+        Task InsertPlace(PlaceDbDto place);
+        Task<PlaceDbDto> GetPlace(string place);
+    }
+
+    [DependencyInjection(DependencyInjectionType.Singleton)]
+    internal class PlaceDbCache: IPlaceDbCache
     {
         private static readonly Dictionary<string, PlaceDbDto> _nameToPlace;
-        private static readonly IDB _db;
+        private static IDB _db;
 
         static PlaceDbCache()
         {
             _nameToPlace = new Dictionary<string, PlaceDbDto>();
-            _db = DbFactory.DB;
         }
 
-        internal static async Task InsertPlace(PlaceDbDto place)
+        public PlaceDbCache(IDB db)
+        {
+            _db = db;
+        }
+
+        public async Task InsertPlace(PlaceDbDto place)
         {
             _nameToPlace[place.PlaceName] = place;
             await _db.Insert(place);
         }
 
-        internal static async Task<PlaceDbDto> GetPlace(string place)
+        public async Task<PlaceDbDto> GetPlace(string place)
         {
             if (!_nameToPlace.ContainsKey(place))
             {

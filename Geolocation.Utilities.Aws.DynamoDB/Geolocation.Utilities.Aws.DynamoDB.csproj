@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Geolocation.DependencyInjection\Geolocation.DependencyInjection.csproj" />
     <ProjectReference Include="..\Geolocation.Entities\Geolocation.Entities.csproj" />
     <ProjectReference Include="..\Geolocation.Utilities.Encryption\Geolocation.Utilities.Encryption.csproj" />
     <ProjectReference Include="..\Geoloocation.DB\Geoloocation.DB.csproj" />
